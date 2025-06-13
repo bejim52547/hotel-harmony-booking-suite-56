@@ -14,7 +14,7 @@ import { Hotel, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   rememberMe: z.boolean().default(false),
 });
@@ -29,7 +29,7 @@ const Login = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
       rememberMe: false,
     },
@@ -39,34 +39,52 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Store login state
-      if (values.rememberMe) {
-        localStorage.setItem("hotelManager_rememberMe", "true");
-        localStorage.setItem("hotelManager_email", values.email);
+      const response = await fetch('https://www.ptalharmain.com:8081/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: values.username,
+          password: values.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Store login state
+        if (values.rememberMe) {
+          localStorage.setItem("hotelManager_rememberMe", "true");
+          localStorage.setItem("hotelManager_username", values.username);
+        }
+        
+        // Store auth token from API response
+        if (data.token) {
+          localStorage.setItem("hotelManager_token", data.token);
+        }
+        
+        toast.success("Login successful! Welcome back.");
+        navigate("/dashboard");
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.message || "Login failed. Please check your credentials.");
       }
-      
-      // Store auth token (simulate)
-      localStorage.setItem("hotelManager_token", "demo_token_123");
-      
-      toast.success("Login successful! Welcome back.");
-      navigate("/dashboard");
     } catch (error) {
-      toast.error("Login failed. Please check your credentials.");
+      console.error('Login error:', error);
+      toast.error("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load remembered email on component mount
+  // Load remembered username on component mount
   useState(() => {
     const rememberMe = localStorage.getItem("hotelManager_rememberMe");
-    const savedEmail = localStorage.getItem("hotelManager_email");
+    const savedUsername = localStorage.getItem("hotelManager_username");
     
-    if (rememberMe === "true" && savedEmail) {
-      form.setValue("email", savedEmail);
+    if (rememberMe === "true" && savedUsername) {
+      form.setValue("username", savedUsername);
       form.setValue("rememberMe", true);
     }
   });
@@ -90,14 +108,14 @@ const Login = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input
-                        type="email"
-                        placeholder="Enter your email"
+                        type="text"
+                        placeholder="Enter your username"
                         {...field}
                         className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
                       />
