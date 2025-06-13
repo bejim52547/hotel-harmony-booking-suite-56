@@ -19,13 +19,23 @@ const Index = () => {
             Complete hotel management solution for modern hospitality businesses. 
             Manage bookings, rooms, and guests with ease.
           </p>
-          <Button 
-            onClick={() => navigate("/dashboard")} 
-            size="lg" 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg animate-scale-in"
-          >
-            Access Dashboard
-          </Button>
+          <div className="flex gap-4 justify-center">
+            <Button 
+              onClick={() => navigate("/login")} 
+              size="lg" 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg animate-scale-in"
+            >
+              Sign In
+            </Button>
+            <Button 
+              onClick={() => navigate("/dashboard")} 
+              size="lg" 
+              variant="outline"
+              className="px-8 py-4 text-lg animate-scale-in"
+            >
+              View Demo
+            </Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
